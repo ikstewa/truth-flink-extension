@@ -20,12 +20,12 @@ repositories {
 
 val flinkVersion: String by rootProject.extra
 dependencies {
-    api(platform("org.apache.logging.log4j:log4j-bom:2.24.3"))
+    // api(platform("org.apache.logging.log4j:log4j-bom:2.24.3"))
 
-    implementation("com.google.code.findbugs:jsr305:3.0.2")
+    // implementation("com.google.code.findbugs:jsr305:3.0.2")
 
-    implementation("org.apache.logging.log4j:log4j-api")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
+    // implementation("org.apache.logging.log4j:log4j-api")
+    // implementation("javax.annotation:javax.annotation-api:1.3.2")
 
     // implementation("io.grpc:grpc-protobuf")
     // implementation("io.grpc:grpc-services")
@@ -53,8 +53,7 @@ dependencies {
     // testImplementation("org.apache.flink:flink-protobuf:$flinkVersion")
     //
     // testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
-    // testImplementation("com.google.truth:truth:1.4.4")
-
+    testImplementation("com.google.truth:truth:1.4.4")
 }
 
 testing {
