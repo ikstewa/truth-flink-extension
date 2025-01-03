@@ -1,0 +1,142 @@
+plugins {
+    `java-library`
+    jacoco
+    `maven-publish`
+    signing
+    id("com.diffplug.spotless") version "6.25.0"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+val flinkVersion: String by rootProject.extra
+dependencies {
+    api(platform("org.apache.logging.log4j:log4j-bom:2.24.3"))
+
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+
+    implementation("org.apache.logging.log4j:log4j-api")
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
+
+    // implementation("io.grpc:grpc-protobuf")
+    // implementation("io.grpc:grpc-services")
+    // implementation("io.grpc:grpc-netty-shaded")
+    // implementation("com.google.code.gson:gson:2.11.0")
+    // implementation("com.google.auto.service:auto-service-annotations:1.1.1")
+    // implementation("org.apache.flink:flink-protobuf:$flinkVersion")
+    // implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
+    // compileOnly("org.apache.flink:flink-table-api-java:$flinkVersion")
+
+    // annotationProcessor("com.google.auto.service:auto-service:1.1.1")
+    //
+    // testImplementation("org.apache.logging.log4j:log4j-core")
+    // testImplementation("org.apache.logging.log4j:log4j-slf4j-impl")
+    // testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl")
+    // testImplementation("org.apache.logging.log4j:log4j-jcl")
+    // testImplementation("org.apache.logging.log4j:log4j-jpl")
+    // testImplementation("org.apache.logging.log4j:log4j-jul")
+    //
+    // testImplementation("org.apache.flink:flink-core:$flinkVersion")
+    // testImplementation("org.apache.flink:flink-table-common:$flinkVersion")
+    // testImplementation("org.apache.flink:flink-table-test-utils:$flinkVersion")
+    // testImplementation("org.apache.flink:flink-test-utils:$flinkVersion")
+    // testImplementation("org.apache.flink:flink-protobuf:$flinkVersion")
+    //
+    // testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
+    // testImplementation("com.google.truth:truth:1.4.4")
+
+}
+
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter()
+            targets {
+                all {
+                    testTask.configure {
+                      testLogging {
+                       showStandardStreams = true
+                      }
+                    }
+                }
+            }
+        }
+    }
+}
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required.set(true)
+        csv.required.set(true)
+    }
+}
+
+spotless {
+    // generic formatting for miscellaneous files
+    format("misc") {
+        target("*.gradle.kts", "*.gradle", "*.md", ".gitignore")
+
+        trimTrailingWhitespace()
+        indentWithSpaces()
+        endWithNewline()
+    }
+
+    // chose the Google java formatter, version 1.9
+    java {
+        targetExclude("**/build/generated/**")
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat()
+
+        // and apply a license header
+        licenseHeaderFile(rootProject.file("HEADER"))
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            pom {
+                name.set("Truth Extension For Flink")
+                description.set("An extension for the Truth test assertion framework supporting Flink.")
+                url.set("https://github.com/ikstewa/truth-flink-extension/")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("ikstewa")
+                        name.set("Ian Stewart")
+                        url.set("https://github.com/ikstewa/")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/ikstewa/truth-flink-extension/")
+                    connection.set("scm:git:git://github.com/ikstewa/truth-flink-extension/")
+                    developerConnection.set("scm:git:ssh://github.com/ikstewa/truth-flink-extension/")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
